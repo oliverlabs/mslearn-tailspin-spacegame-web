@@ -1,0 +1,46 @@
+name: Trigger auto deployment for container-app-sto2cosicvkxs
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/container-app-sto2cosicvkxs-AutoDeployTrigger-54890422-ee34-4dc1-85ac-ae820dd6bf68.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPSTO2COSICVKXS_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPSTO2COSICVKXS_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPSTO2COSICVKXS_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerregistrysto2cosicvkxs.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPSTO2COSICVKXS_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPSTO2COSICVKXS_REGISTRY_PASSWORD }}
+          containerAppName: container-app-sto2cosicvkxs
+          resourceGroup: mslearntailspinspacegameweb872b
+          imageToBuild: containerregistrysto2cosicvkxs.azurecr.io/container-app-sto2cosicvkxs:${{ github.sha }}
+          
+
+
